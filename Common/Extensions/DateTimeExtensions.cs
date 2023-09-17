@@ -2,32 +2,12 @@
 
 public static class DateTimeExtensions
 {
-    public static bool IsInRange(this DateTime value, DateTime start, DateTime end)
+    /// <summary>
+    /// 特定の周期において、どの日に含まれるかを取得する
+    /// 例） 毎日5時にアプリがリセットされる（interval: 1日, offset: 5時間）として、valueがどの日の分になるのかを取得する
+    /// </summary>
+    public static DateTime AsInterval(this DateTime value, TimeSpan interval, TimeSpan offset)
     {
-        return start <= value && value < end;
-    }
-
-    public static DateTime NextDayOfWeek(this DateTime source, DayOfWeek dayOfWeek)
-    {
-        source = source.Date;
-        var thisWeekTarget = source.AddDays(DayOfWeek.Sunday - source.DayOfWeek + (int)dayOfWeek);
-        return source < thisWeekTarget ? thisWeekTarget : thisWeekTarget.AddDays(7);
-    }
-
-    public static DateTime NextTime(this DateTime source, TimeSpan target)
-    {
-        var todayTarget = source.OnTime(target);
-        return source < todayTarget ? todayTarget : todayTarget.AddDays(1);
-    }
-
-    public static DateTime PreviousTime(this DateTime source, TimeSpan target)
-    {
-        var todayTarget = source.OnTime(target);
-        return todayTarget < source ? todayTarget : todayTarget.AddDays(-1);
-    }
-
-    public static DateTime OnTime(this DateTime source, TimeSpan target)
-    {
-        return source.Date + new TimeSpan(target.Hours, target.Minutes, target.Seconds);
+        return value.AddTicks(-(value.Ticks - offset.Ticks) % interval.Ticks);
     }
 }

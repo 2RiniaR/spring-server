@@ -5,6 +5,10 @@ namespace RineaR.Spring.Common;
 
 public class Login : ActionBase
 {
+    /// <summary>
+    /// どの日分のログインか
+    /// </summary>
+    public DateTime ApplicationDate { get; set; }
 }
 
 public class LoginConfiguration : IEntityTypeConfiguration<Login>
