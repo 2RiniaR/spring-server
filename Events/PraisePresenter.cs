@@ -8,5 +8,7 @@ public class PraisePresenter : DiscordReactionPresenterBase
     {
         var praise = await UserServices.As(Reaction.UserId)
             .PraiseAsync(AuthorUser.Id, Reaction.MessageId, Reaction.Emote.GetHashCode());
+
+        // ToDo: 一定数褒められたら何かしたい
     }
 }
