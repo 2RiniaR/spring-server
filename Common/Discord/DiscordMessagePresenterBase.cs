@@ -2,7 +2,7 @@
 
 namespace RineaR.Spring.Common;
 
-public abstract class DiscordMessagePresenterBase
+public abstract class DiscordMessagePresenterBase : DiscordPresenterBase
 {
     public SocketUserMessage Message { get; set; } = null!;
 
