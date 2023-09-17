@@ -10,6 +10,7 @@ public class HelpPresenter : DiscordMessagePresenterBase
         var embed = new EmbedBuilder()
             .WithColor(Color.Blue)
             .WithTitle("エライさん ヘルプ")
+            .WithDescription(HelpView.Text)
             .WithCurrentTimestamp()
             .Build();
 
