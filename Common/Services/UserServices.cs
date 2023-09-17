@@ -112,6 +112,8 @@ public class UserServices
             DiscordMessageId = messageId,
             DiscordReactionId = reactionId,
             TargetUserId = targetUserId,
+            MarvelousScore = MasterManager.SendPraiseMarvelousScore,
+            GivenMarvelousScore = MasterManager.ReceivePraiseMarvelousScore,
         };
         context.Add(praise);
 
