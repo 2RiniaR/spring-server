@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace RineaR.Spring.Common;
 
@@ -10,23 +9,9 @@ public class SpringDbContext : DbContext
         options.UseMySQL(EnvironmentManager.MysqlConnectionString);
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
-    {
-        var entities = from e in ChangeTracker.Entries()
-            where e.State == EntityState.Added || e.State == EntityState.Modified
-            select e.Entity;
-
-        foreach (var entity in entities)
-        {
-            var validationContext = new ValidationContext(entity, null);
-            Validator.ValidateObject(entity, validationContext, true);
-        }
-
-        return base.SaveChangesAsync(cancellationToken);
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfiguration(new EventRecordConfiguration());
         modelBuilder.ApplyConfiguration(new ActionBaseConfiguration());
         modelBuilder.ApplyConfiguration(new BedInConfiguration());
         modelBuilder.ApplyConfiguration(new DailyContributionConfiguration());

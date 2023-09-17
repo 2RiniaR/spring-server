@@ -1,4 +1,5 @@
 ﻿using System.Timers;
+using Microsoft.EntityFrameworkCore;
 using Timer = System.Timers.Timer;
 
 namespace RineaR.Spring.Common;
@@ -6,54 +7,89 @@ namespace RineaR.Spring.Common;
 public static class SchedulerManager
 {
     private static readonly Timer Timer = new(TimeSpan.FromSeconds(1));
-    private static readonly List<JobInfo> JobInfos = new();
+    private static readonly List<SchedulerJobRunner> Runners = new();
+    private static readonly Dictionary<string, DateTime> CachedLastTimestamps = new();
+    private static readonly Timer CacheFetchTimer = new(TimeSpan.FromMinutes(1));
 
-    public static void Initialize()
+    public static async Task InitializeAsync()
     {
         Timer.Elapsed += OnEverySecond;
         Timer.Start();
+        CacheFetchTimer.Elapsed += (_, _) => FetchLastRunTimeAsync().Forget();
+        CacheFetchTimer.Start();
+
+        await FetchLastRunTimeAsync();
     }
 
     private static void OnEverySecond(object? sender, ElapsedEventArgs e)
     {
         var now = TimeManager.GetNow();
-        foreach (var jobInfo in JobInfos)
+        foreach (var runner in Runners)
         {
-            var nextTime = jobInfo.GetNext(now);
-            if (now < nextTime) continue;
-            jobInfo.CreateNewJob().RunAsync();
+            if (GetLastRunTime(runner) + runner.Interval + runner.ConfigureTime <= now)
+            {
+                runner.Run();
+                SetLastRunTime(runner, now);
+            }
         }
     }
 
-    private static void RegisterInternal<T>(Func<DateTime, DateTime> getNext)
-        where T : SchedulerJobPresenterBase, new()
+    public static void RegisterInterval<T>(TimeSpan interval, TimeSpan delta) where T : SchedulerJobPresenterBase, new()
     {
-        JobInfos.Add(new JobInfo(getNext, () => new T()));
-    }
-
-    public static void RegisterDaily<T>(Func<TimeSpan> getTime) where T : SchedulerJobPresenterBase, new()
-    {
-        RegisterInternal<T>(now => now.NextTime(getTime()));
-    }
-
-    public static void RegisterWeekly<T>(Func<(DayOfWeek, TimeSpan)> getTime) where T : SchedulerJobPresenterBase, new()
-    {
-        RegisterInternal<T>(now =>
+        Runners.Add(new SchedulerJobRunner<T>
         {
-            var (dayOfWeek, time) = getTime();
-            return now.NextDayOfWeek(dayOfWeek).NextTime(time);
+            Interval = interval,
+            ConfigureTime = delta,
         });
     }
 
-    private class JobInfo
+    public static void RegisterDaily<T>(TimeSpan time) where T : SchedulerJobPresenterBase, new()
     {
-        public JobInfo(Func<DateTime, DateTime> getNext, Func<SchedulerJobPresenterBase> createNewJob)
-        {
-            GetNext = getNext;
-            CreateNewJob = createNewJob;
-        }
+        RegisterInterval<T>(TimeSpan.FromDays(1), time);
+    }
 
-        public Func<DateTime, DateTime> GetNext { get; }
-        public Func<SchedulerJobPresenterBase> CreateNewJob { get; }
+    public static void RegisterWeekly<T>(DayOfWeek dayOfWeek, TimeSpan time) where T : SchedulerJobPresenterBase, new()
+    {
+        RegisterInterval<T>(TimeSpan.FromDays(7), TimeSpan.FromDays((int)dayOfWeek) + time);
+    }
+
+    public static DateTime GetLastRunTime(SchedulerJobRunner runner)
+    {
+        // 毎秒DBを読むことになってしまうため、キャッシュする
+        if (CachedLastTimestamps.TryGetValue(runner.Id, out var lastRunTime)) return lastRunTime;
+        return DateTime.MinValue;
+    }
+
+    public static void SetLastRunTime(SchedulerJobRunner runner, DateTime runTime)
+    {
+        CachedLastTimestamps[runner.Id] = runTime;
+        SaveLastRunTimeAsync(runner, runTime).Forget();
+    }
+
+    public static async Task FetchLastRunTimeAsync()
+    {
+        await using var context = new SpringDbContext();
+        var states = await context.Set<SchedulerJobState>().ToListAsync();
+        foreach (var state in states)
+        {
+            CachedLastTimestamps[state.Id] = state.LastRunTime;
+        }
+    }
+
+    public static async Task<SchedulerJobState> SaveLastRunTimeAsync(SchedulerJobRunner runner, DateTime runTime)
+    {
+        await using var context = new SpringDbContext();
+
+        var state = await context.FindAsync<SchedulerJobState>(runner.Id);
+        if (state == null)
+        {
+            state = new SchedulerJobState { Id = runner.Id, LastRunTime = runTime };
+            context.Add(state);
+        }
+        else
+            state.LastRunTime = runTime;
+
+        await context.SaveChangesAsync();
+        return state;
     }
 }

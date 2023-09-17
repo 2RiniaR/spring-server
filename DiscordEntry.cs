@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using RineaR.Spring.Common;
@@ -16,16 +17,17 @@ public static class DiscordEntry
         DiscordManager.Client.ReactionRemoved += OnReactionRemoved;
     }
 
-    private static async Task OnMessageReceived(SocketMessage message)
+    private static Task OnMessageReceived(SocketMessage message)
     {
         // botは弾く
-        if (message is not SocketUserMessage userMessage || userMessage.Author.IsBot) return;
+        if (message is not SocketUserMessage userMessage || userMessage.Author.IsBot) return Task.CompletedTask;
 
         DiscordManager.ExecuteMatchedCommand(userMessage, MasterManager.DiscordCommandPrefix);
         DiscordManager.Execute<GreetPresenter>(userMessage);
         if (userMessage.Content == "おやすみ") DiscordManager.Execute<BedInPresenter>(userMessage);
         if (userMessage.MentionedUsers.Contains(DiscordManager.Client.CurrentUser))
             DiscordManager.Execute<HelpPresenter>(userMessage);
+        return Task.CompletedTask;
     }
 
     private static async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message,
@@ -52,6 +54,8 @@ public static class DiscordEntry
         if (reaction.Emote.Name == "👍") DiscordManager.Execute<CancelPraisePresenter>(reaction);
     }
 
+    [SuppressMessage("ReSharper", "UnusedMember.Local")]
+    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
     private class CommandDefine : ModuleBase<SocketCommandContext>
     {
         [Command("user")]
