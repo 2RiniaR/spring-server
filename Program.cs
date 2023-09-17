@@ -11,8 +11,7 @@ public class Program
 
     private static async Task BuildAsync(string[] args)
     {
-        SchedulerManager.Initialize();
-        await DiscordManager.InitializeAsync();
+        await Task.WhenAll(SchedulerManager.InitializeAsync(), DiscordManager.InitializeAsync());
 
         DiscordEntry.RegisterEvents();
         SchedulerEntry.RegisterEvents();
