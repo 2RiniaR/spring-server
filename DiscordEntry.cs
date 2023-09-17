@@ -26,7 +26,7 @@ public static class DiscordEntry
         DiscordManager.Execute<LoginPresenter>(userMessage);
         DiscordManager.Execute<GreetPresenter>(userMessage);
         if (userMessage.Content == "おやすみ") DiscordManager.Execute<BedInPresenter>(userMessage);
-        if (userMessage.MentionedUsers.Contains(DiscordManager.Client.CurrentUser))
+        if (userMessage.IsMentioned(DiscordManager.Client.CurrentUser))
             DiscordManager.Execute<HelpPresenter>(userMessage);
         return Task.CompletedTask;
     }
@@ -60,9 +60,9 @@ public static class DiscordEntry
     private class CommandDefine : ModuleBase<SocketCommandContext>
     {
         [Command("user")]
-        public void User()
+        public void User(SocketUser user)
         {
-            DiscordManager.Execute<UserPresenter>(Context.Message);
+            DiscordManager.Execute<UserPresenter>(Context.Message, presenter => presenter.TargetUser = user);
         }
 
         [Command("me")]
@@ -74,13 +74,13 @@ public static class DiscordEntry
         [Command("ranking")]
         public void Ranking()
         {
-            DiscordManager.Execute<UserPresenter>(Context.Message);
+            DiscordManager.Execute<RankingPresenter>(Context.Message);
         }
 
         [Command("help")]
         public void Help()
         {
-            DiscordManager.Execute<UserPresenter>(Context.Message);
+            DiscordManager.Execute<HelpPresenter>(Context.Message);
         }
     }
 }
