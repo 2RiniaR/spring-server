@@ -64,13 +64,18 @@ public class UserServices
             .FirstOrDefaultAsync();
 
         // 本日既にログイン済みの場合はnullを返す
-        if (lastLogin != null &&
-            lastLogin.ApplicationDate == TimeManager.GetApplicationDate())
-            return null;
+        var date = TimeManager.GetApplicationDate();
+        if (lastLogin != null && lastLogin.ApplicationDate == date) return null;
 
         // ログインボーナスを付与
-        var login = new Login { UserId = UserId, Score = MasterManager.LoginScore };
+        var login = new Login
+        {
+            UserId = UserId,
+            ApplicationDate = date,
+            Score = MasterManager.LoginScore,
+        };
         context.Add(login);
+
         await context.SaveChangesAsync();
         return login;
     }

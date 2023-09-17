@@ -8,6 +8,6 @@ public static class DateTimeExtensions
     /// </summary>
     public static DateTime AsInterval(this DateTime value, TimeSpan interval, TimeSpan offset)
     {
-        return value.AddTicks(-(value.Ticks - offset.Ticks) % interval.Ticks);
+        return value.AddTicks(-(value.Ticks - offset.Ticks) % interval.Ticks) - offset;
     }
 }
