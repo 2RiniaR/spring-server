@@ -17,18 +17,18 @@ public static class DiscordEntry
         DiscordManager.Client.ReactionRemoved += OnReactionRemoved;
     }
 
-    private static Task OnMessageReceived(SocketMessage message)
+    private static async Task OnMessageReceived(SocketMessage message)
     {
         // botは弾く
-        if (message is not SocketUserMessage userMessage || userMessage.Author.IsBot) return Task.CompletedTask;
+        if (message is not SocketUserMessage userMessage || userMessage.Author.IsBot) return;
 
-        DiscordManager.ExecuteMatchedCommand(userMessage, MasterManager.DiscordCommandPrefix);
-        DiscordManager.Execute<LoginPresenter>(userMessage);
-        DiscordManager.Execute<GreetPresenter>(userMessage);
-        if (userMessage.Content == "おやすみ") DiscordManager.Execute<BedInPresenter>(userMessage);
-        if (userMessage.MentionedUsers.Contains(DiscordManager.Client.CurrentUser))
-            DiscordManager.Execute<HelpPresenter>(userMessage);
-        return Task.CompletedTask;
+        await DiscordManager.ExecuteMatchedCommandAsync(userMessage, MasterManager.DiscordCommandPrefix);
+        await DiscordManager.ExecuteAsync<LoginPresenter>(userMessage);
+        await DiscordManager.ExecuteAsync<GreetPresenter>(userMessage);
+        if (userMessage.Content == MasterManager.BedInPhrase)
+            await DiscordManager.ExecuteAsync<BedInPresenter>(userMessage);
+        if (userMessage.IsMentioned(DiscordManager.Client.CurrentUser))
+            await DiscordManager.ExecuteAsync<HelpPresenter>(userMessage);
     }
 
     private static async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message,
@@ -40,7 +40,7 @@ public static class DiscordEntry
         // botは弾く
         if (reactedUser.IsBot || messageAuthor.IsBot) return;
 
-        if (reaction.Emote.Name == "👍") DiscordManager.Execute<PraisePresenter>(reaction);
+        if (reaction.Emote.Name == "👍") await DiscordManager.ExecuteAsync<PraisePresenter>(reaction);
     }
 
     private static async Task OnReactionRemoved(Cacheable<IUserMessage, ulong> message,
@@ -52,7 +52,7 @@ public static class DiscordEntry
         // botは弾く
         if (reactedUser.IsBot || messageAuthor.IsBot) return;
 
-        if (reaction.Emote.Name == "👍") DiscordManager.Execute<CancelPraisePresenter>(reaction);
+        if (reaction.Emote.Name == "👍") await DiscordManager.ExecuteAsync<CancelPraisePresenter>(reaction);
     }
 
     [SuppressMessage("ReSharper", "UnusedMember.Local")]
@@ -60,27 +60,27 @@ public static class DiscordEntry
     private class CommandDefine : ModuleBase<SocketCommandContext>
     {
         [Command("user")]
-        public void User()
+        public async Task User(SocketUser user)
         {
-            DiscordManager.Execute<UserPresenter>(Context.Message);
+            await DiscordManager.ExecuteAsync<UserPresenter>(Context.Message, presenter => presenter.TargetUser = user);
         }
 
         [Command("me")]
-        public void Me()
+        public async Task Me()
         {
-            DiscordManager.Execute<UserPresenter>(Context.Message);
+            await DiscordManager.ExecuteAsync<UserPresenter>(Context.Message);
         }
 
         [Command("ranking")]
-        public void Ranking()
+        public async Task Ranking()
         {
-            DiscordManager.Execute<UserPresenter>(Context.Message);
+            await DiscordManager.ExecuteAsync<RankingPresenter>(Context.Message);
         }
 
         [Command("help")]
-        public void Help()
+        public async Task Help()
         {
-            DiscordManager.Execute<UserPresenter>(Context.Message);
+            await DiscordManager.ExecuteAsync<HelpPresenter>(Context.Message);
         }
     }
 }

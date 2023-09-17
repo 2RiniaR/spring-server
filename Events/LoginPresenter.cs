@@ -10,7 +10,7 @@ public class LoginPresenter : DiscordMessagePresenterBase
         var login = await UserServices.As(Message.Author.Id).LoginAsync();
         if (login == null) return;
 
-        var text = $"{UserNameText(Message.Author)}、今日も生きててえらい！ {ScoreDiffText(login.Score)}";
+        var text = $"{UserNameText(Message.Author)}、今日も生きててえらい！ {MarvelousScoreDiffText(login.MarvelousScore)}";
         await Message.ReplyAsync(text);
     }
 }
