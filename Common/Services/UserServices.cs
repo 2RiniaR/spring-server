@@ -47,23 +47,35 @@ public class UserServices
         return wakeUp;
     }
 
+    /// <summary>
+    /// ログイン時の処理を行う
+    /// </summary>
     public async Task<Login?> LoginAsync()
     {
+        // ユーザーがいなければ作成
         await AppServices.FindOrCreateUserAsync(UserId);
+
         await using var context = new SpringDbContext();
+
+        // 最後にログインしたときのデータを取得
         var lastLogin = await context.Set<Login>()
             .Where(x => x.UserId == UserId)
             .OrderByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync();
 
-        // 既にログイン済みの場合はnullを返す
-        if (lastLogin != null &&
-            lastLogin.CreatedAt.NextTime(MasterManager.DailyReset) ==
-            TimeManager.GetNow().NextTime(MasterManager.DailyReset))
-            return null;
+        // 本日既にログイン済みの場合はnullを返す
+        var date = TimeManager.GetApplicationDate();
+        if (lastLogin != null && lastLogin.ApplicationDate == date) return null;
 
-        var login = new Login { UserId = UserId, Score = MasterManager.LoginScore };
+        // ログインボーナスを付与
+        var login = new Login
+        {
+            UserId = UserId,
+            ApplicationDate = date,
+            Score = MasterManager.LoginScore,
+        };
         context.Add(login);
+
         await context.SaveChangesAsync();
         return login;
     }

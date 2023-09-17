@@ -23,6 +23,7 @@ public static class DiscordEntry
         if (message is not SocketUserMessage userMessage || userMessage.Author.IsBot) return Task.CompletedTask;
 
         DiscordManager.ExecuteMatchedCommand(userMessage, MasterManager.DiscordCommandPrefix);
+        DiscordManager.Execute<LoginPresenter>(userMessage);
         DiscordManager.Execute<GreetPresenter>(userMessage);
         if (userMessage.Content == "おやすみ") DiscordManager.Execute<BedInPresenter>(userMessage);
         if (userMessage.MentionedUsers.Contains(DiscordManager.Client.CurrentUser))

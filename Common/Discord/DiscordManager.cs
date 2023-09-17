@@ -46,7 +46,7 @@ public static class DiscordManager
         if (!message.HasStringPrefix(prefix, ref argPos)) return;
 
         var context = new SocketCommandContext(Client, message);
-        Commands.ExecuteAsync(context, argPos, null);
+        Commands.ExecuteAsync(context, argPos, null).Forget();
     }
 
     public static void Execute<T>(SocketUserMessage message, Action<T>? onInitialize = null)
@@ -54,7 +54,7 @@ public static class DiscordManager
     {
         var presenter = new T { Message = message };
         onInitialize?.Invoke(presenter);
-        presenter.RunAsync();
+        presenter.RunAsync().Forget();
     }
 
     public static void Execute<T>(SocketReaction reaction, Action<T>? onInitialize = null)
@@ -62,6 +62,6 @@ public static class DiscordManager
     {
         var presenter = new T { Reaction = reaction };
         onInitialize?.Invoke(presenter);
-        presenter.RunAsync();
+        presenter.RunAsync().Forget();
     }
 }

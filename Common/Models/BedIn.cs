@@ -7,8 +7,11 @@ public class BedIn : ActionBase
 {
     public int? WakeUpId { get; set; }
     public WakeUp? WakeUp { get; set; }
-    public DateTime MustWakeUpSince => CreatedAt.NextTime(MasterManager.WakeUpStart);
-    public DateTime MustWakeUpUntil => CreatedAt.NextTime(MasterManager.WakeUpEnd);
+
+    /// <summary>
+    /// どの日分の就寝か
+    /// </summary>
+    public DateTime ApplicationDate { get; set; }
 }
 
 public class BedInConfiguration : IEntityTypeConfiguration<BedIn>
