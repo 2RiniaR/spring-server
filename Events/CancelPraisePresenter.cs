@@ -7,6 +7,6 @@ public class CancelPraisePresenter : DiscordReactionPresenterBase
     public override async Task RunAsync()
     {
         await UserServices.As(Reaction.UserId)
-            .CancelPraiseAsync(Reaction.User.Value.Id, Message.Id, Reaction.Emote.GetHashCode());
+            .CancelPraiseAsync(AuthorUser.Id, Reaction.MessageId, Reaction.Emote.GetHashCode());
     }
 }

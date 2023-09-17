@@ -22,11 +22,20 @@ public static class DiscordEntry
         // botは弾く
         if (message is not SocketUserMessage userMessage || userMessage.Author.IsBot) return;
 
-        await DiscordManager.ExecuteMatchedCommandAsync(userMessage, MasterManager.DiscordCommandPrefix);
+        // ログイン
         await DiscordManager.ExecuteAsync<LoginPresenter>(userMessage);
+
+        // コマンド実行
+        await DiscordManager.ExecuteMatchedCommandAsync(userMessage, MasterManager.DiscordCommandPrefix);
+
+        // 起床
         await DiscordManager.ExecuteAsync<GreetPresenter>(userMessage);
+
+        // 特定のメッセージの時、就寝
         if (userMessage.Content == MasterManager.BedInPhrase)
             await DiscordManager.ExecuteAsync<BedInPresenter>(userMessage);
+
+        // メンションされたとき、ヘルプを表示
         if (userMessage.IsMentioned(DiscordManager.Client.CurrentUser))
             await DiscordManager.ExecuteAsync<HelpPresenter>(userMessage);
     }
@@ -40,7 +49,9 @@ public static class DiscordEntry
         // botは弾く
         if (reactedUser.IsBot || messageAuthor.IsBot) return;
 
-        if (reaction.Emote.Name == "👍") await DiscordManager.ExecuteAsync<PraisePresenter>(reaction);
+        // 特定のリアクションをしたとき、褒める
+        if (MasterManager.PraiseEmotes.Contains(reaction.Emote.Name))
+            await DiscordManager.ExecuteAsync<PraisePresenter>(reaction, messageAuthor);
     }
 
     private static async Task OnReactionRemoved(Cacheable<IUserMessage, ulong> message,
@@ -52,9 +63,14 @@ public static class DiscordEntry
         // botは弾く
         if (reactedUser.IsBot || messageAuthor.IsBot) return;
 
-        if (reaction.Emote.Name == "👍") await DiscordManager.ExecuteAsync<CancelPraisePresenter>(reaction);
+        // 特定のリアクションを外したとき、褒めたのを取り消す
+        if (MasterManager.PraiseEmotes.Contains(reaction.Emote.Name))
+            await DiscordManager.ExecuteAsync<CancelPraisePresenter>(reaction, messageAuthor);
     }
 
+    /// <summary>
+    /// 各コマンドの定義
+    /// </summary>
     [SuppressMessage("ReSharper", "UnusedMember.Local")]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
     private class CommandDefine : ModuleBase<SocketCommandContext>

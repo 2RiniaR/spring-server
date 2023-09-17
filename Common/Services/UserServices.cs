@@ -83,6 +83,9 @@ public class UserServices
         return login;
     }
 
+    /// <summary>
+    /// 他人を褒める
+    /// </summary>
     public async Task<Praise?> PraiseAsync(ulong targetUserId, ulong messageId, int reactionId)
     {
         // 自分自身を褒めることはできない
@@ -90,19 +93,27 @@ public class UserServices
 
         await using var context = new SpringDbContext();
 
+        // 既に同一条件で褒めたかどうかチェック あったら終了
         var existPraise = await context.Set<Praise>().FirstOrDefaultAsync(praise =>
             praise.DiscordMessageId == messageId &&
             praise.DiscordReactionId == reactionId &&
             praise.UserId == UserId &&
             praise.TargetUserId == targetUserId);
-        if (existPraise == null) return null;
+        if (existPraise != null) return null;
 
+        // ユーザーがいなければ作成
+        await AppServices.FindOrCreateUserAsync(UserId);
+        await AppServices.FindOrCreateUserAsync(targetUserId);
+
+        // 褒めたことを記録
         var praise = new Praise
         {
             UserId = UserId,
             DiscordMessageId = messageId,
             DiscordReactionId = reactionId,
             TargetUserId = targetUserId,
+            MarvelousScore = MasterManager.SendPraiseMarvelousScore,
+            GivenMarvelousScore = MasterManager.ReceivePraiseMarvelousScore,
         };
         context.Add(praise);
 
@@ -110,20 +121,25 @@ public class UserServices
         return praise;
     }
 
+    /// <summary>
+    /// 他人を褒めたのを取り消す
+    /// </summary>
     public async Task<Praise?> CancelPraiseAsync(ulong targetUserId, ulong messageId, int reactionId)
     {
         await using var context = new SpringDbContext();
 
-        var existPraise = await context.Set<Praise>().FirstOrDefaultAsync(praise =>
+        // 同一条件で褒めた記録を検索 なければ終了
+        var praise = await context.Set<Praise>().FirstOrDefaultAsync(praise =>
             praise.DiscordMessageId == messageId &&
             praise.DiscordReactionId == reactionId &&
             praise.UserId == UserId &&
             praise.TargetUserId == targetUserId);
-        if (existPraise == null) return null;
+        if (praise == null) return null;
 
-        context.Remove(existPraise);
+        // 褒めた記録を削除
+        context.Remove(praise);
 
         await context.SaveChangesAsync();
-        return existPraise;
+        return praise;
     }
 }
