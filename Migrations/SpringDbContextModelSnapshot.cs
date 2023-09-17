@@ -81,6 +81,9 @@ namespace RineaR.Spring.Migrations
                 {
                     b.HasBaseType("RineaR.Spring.Common.ActionBase");
 
+                    b.Property<DateTime>("ApplicationDate")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<int?>("WakeUpId")
                         .HasColumnType("int");
 
@@ -100,6 +103,15 @@ namespace RineaR.Spring.Migrations
             modelBuilder.Entity("RineaR.Spring.Common.Login", b =>
                 {
                     b.HasBaseType("RineaR.Spring.Common.ActionBase");
+
+                    b.Property<DateTime>("ApplicationDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.ToTable("ActionBase", t =>
+                        {
+                            t.Property("ApplicationDate")
+                                .HasColumnName("Login_ApplicationDate");
+                        });
 
                     b.HasDiscriminator().HasValue("Login");
                 });
