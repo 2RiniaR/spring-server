@@ -48,10 +48,10 @@ public static class DiscordManager
         await presenter.RunAsync();
     }
 
-    public static async Task ExecuteAsync<T>(SocketReaction reaction, Action<T>? onInitialize = null)
+    public static async Task ExecuteAsync<T>(SocketReaction reaction, IUser authorUser, Action<T>? onInitialize = null)
         where T : DiscordReactionPresenterBase, new()
     {
-        var presenter = new T { Reaction = reaction };
+        var presenter = new T { Reaction = reaction, AuthorUser = authorUser };
         onInitialize?.Invoke(presenter);
         await presenter.RunAsync();
     }
