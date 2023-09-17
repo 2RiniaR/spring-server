@@ -9,7 +9,7 @@ public class SchedulerJobState
     public DateTime LastRunTime { get; set; }
 }
 
-public class EventRecordConfiguration : IEntityTypeConfiguration<SchedulerJobState>
+public class SchedulerJobStateConfiguration : IEntityTypeConfiguration<SchedulerJobState>
 {
     public void Configure(EntityTypeBuilder<SchedulerJobState> builder)
     {

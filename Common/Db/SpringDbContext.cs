@@ -11,12 +11,13 @@ public class SpringDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new EventRecordConfiguration());
+        modelBuilder.ApplyConfiguration(new SchedulerJobStateConfiguration());
         modelBuilder.ApplyConfiguration(new ActionBaseConfiguration());
         modelBuilder.ApplyConfiguration(new BedInConfiguration());
         modelBuilder.ApplyConfiguration(new DailyContributionConfiguration());
         modelBuilder.ApplyConfiguration(new LoginConfiguration());
         modelBuilder.ApplyConfiguration(new PraiseConfiguration());
+        modelBuilder.ApplyConfiguration(new ComfortConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
         modelBuilder.ApplyConfiguration(new WakeUpConfiguration());
     }

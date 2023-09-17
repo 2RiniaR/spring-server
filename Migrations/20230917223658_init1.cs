@@ -7,12 +7,25 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace RineaR.Spring.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class init1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterDatabase()
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "SchedulerJobState",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false),
+                    LastRunTime = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SchedulerJobState", x => x.Id);
+                })
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
@@ -36,15 +49,23 @@ namespace RineaR.Spring.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     UserId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
-                    Score = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    MarvelousScore = table.Column<int>(type: "int", nullable: false),
+                    PainfulScore = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     ActionType = table.Column<string>(type: "longtext", nullable: false),
                     WakeUpId = table.Column<int>(type: "int", nullable: true),
-                    Count = table.Column<int>(type: "int", nullable: true),
+                    ApplicationDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     DiscordMessageId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
                     DiscordReactionId = table.Column<int>(type: "int", nullable: true),
                     TargetUserId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
-                    GivenScore = table.Column<int>(type: "int", nullable: true),
+                    GivenPainfulScore = table.Column<int>(type: "int", nullable: true),
+                    Count = table.Column<int>(type: "int", nullable: true),
+                    Login_ApplicationDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    Praise_DiscordMessageId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
+                    Praise_DiscordReactionId = table.Column<int>(type: "int", nullable: true),
+                    Praise_TargetUserId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
+                    GivenMarvelousScore = table.Column<int>(type: "int", nullable: true),
                     BedInId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -55,6 +76,12 @@ namespace RineaR.Spring.Migrations
                         column: x => x.BedInId,
                         principalTable: "ActionBase",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ActionBase_User_Praise_TargetUserId",
+                        column: x => x.Praise_TargetUserId,
+                        principalTable: "User",
+                        principalColumn: "DiscordID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ActionBase_User_TargetUserId",
                         column: x => x.TargetUserId,
@@ -77,6 +104,11 @@ namespace RineaR.Spring.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ActionBase_Praise_TargetUserId",
+                table: "ActionBase",
+                column: "Praise_TargetUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ActionBase_TargetUserId",
                 table: "ActionBase",
                 column: "TargetUserId");
@@ -92,6 +124,9 @@ namespace RineaR.Spring.Migrations
         {
             migrationBuilder.DropTable(
                 name: "ActionBase");
+
+            migrationBuilder.DropTable(
+                name: "SchedulerJobState");
 
             migrationBuilder.DropTable(
                 name: "User");

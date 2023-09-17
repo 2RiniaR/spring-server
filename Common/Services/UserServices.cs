@@ -35,7 +35,10 @@ public class UserServices
     {
         await using var context = new SpringDbContext();
 
-        var bedIn = await context.FindAsync<BedIn>();
+        var bedIn = await context.Set<BedIn>()
+            .Where(x => x.UserId == UserId)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
         if (bedIn is not { WakeUpId: null }) return null;
 
         var wakeUp = new WakeUp
@@ -72,7 +75,7 @@ public class UserServices
         {
             UserId = UserId,
             ApplicationDate = date,
-            Score = MasterManager.LoginScore,
+            MarvelousScore = MasterManager.LoginMarvelousScore,
         };
         context.Add(login);
 

@@ -25,7 +25,8 @@ public static class DiscordEntry
         await DiscordManager.ExecuteMatchedCommandAsync(userMessage, MasterManager.DiscordCommandPrefix);
         await DiscordManager.ExecuteAsync<LoginPresenter>(userMessage);
         await DiscordManager.ExecuteAsync<GreetPresenter>(userMessage);
-        if (userMessage.Content == "おやすみ") await DiscordManager.ExecuteAsync<BedInPresenter>(userMessage);
+        if (userMessage.Content == MasterManager.BedInPhrase)
+            await DiscordManager.ExecuteAsync<BedInPresenter>(userMessage);
         if (userMessage.IsMentioned(DiscordManager.Client.CurrentUser))
             await DiscordManager.ExecuteAsync<HelpPresenter>(userMessage);
     }

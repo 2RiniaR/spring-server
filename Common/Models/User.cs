@@ -8,7 +8,7 @@ public class User
     public ulong DiscordID { get; set; }
     public string? GitHubID { get; set; }
     public IEnumerable<ActionBase> Actions { get; } = new List<ActionBase>();
-    public int TotalScore => Actions.Sum(x => x.Score);
+    public int TotalScore => Actions.Sum(x => x.MarvelousScore);
 }
 
 public class UserConfiguration : IEntityTypeConfiguration<User>

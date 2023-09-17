@@ -33,7 +33,10 @@ namespace RineaR.Spring.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("Score")
+                    b.Property<int>("MarvelousScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PainfulScore")
                         .HasColumnType("int");
 
                     b.Property<ulong>("UserId")
@@ -90,6 +93,27 @@ namespace RineaR.Spring.Migrations
                     b.HasDiscriminator().HasValue("BedIn");
                 });
 
+            modelBuilder.Entity("RineaR.Spring.Common.Comfort", b =>
+                {
+                    b.HasBaseType("RineaR.Spring.Common.ActionBase");
+
+                    b.Property<ulong>("DiscordMessageId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<int>("DiscordReactionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GivenPainfulScore")
+                        .HasColumnType("int");
+
+                    b.Property<ulong>("TargetUserId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.HasIndex("TargetUserId");
+
+                    b.HasDiscriminator().HasValue("Comfort");
+                });
+
             modelBuilder.Entity("RineaR.Spring.Common.DailyContribution", b =>
                 {
                     b.HasBaseType("RineaR.Spring.Common.ActionBase");
@@ -126,13 +150,25 @@ namespace RineaR.Spring.Migrations
                     b.Property<int>("DiscordReactionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("GivenScore")
+                    b.Property<int>("GivenMarvelousScore")
                         .HasColumnType("int");
 
                     b.Property<ulong>("TargetUserId")
                         .HasColumnType("bigint unsigned");
 
                     b.HasIndex("TargetUserId");
+
+                    b.ToTable("ActionBase", t =>
+                        {
+                            t.Property("DiscordMessageId")
+                                .HasColumnName("Praise_DiscordMessageId");
+
+                            t.Property("DiscordReactionId")
+                                .HasColumnName("Praise_DiscordReactionId");
+
+                            t.Property("TargetUserId")
+                                .HasColumnName("Praise_TargetUserId");
+                        });
 
                     b.HasDiscriminator().HasValue("Praise");
                 });
@@ -159,6 +195,17 @@ namespace RineaR.Spring.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RineaR.Spring.Common.Comfort", b =>
+                {
+                    b.HasOne("RineaR.Spring.Common.User", "TargetUser")
+                        .WithMany()
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TargetUser");
                 });
 
             modelBuilder.Entity("RineaR.Spring.Common.Praise", b =>
