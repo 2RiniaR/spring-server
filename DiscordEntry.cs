@@ -52,6 +52,10 @@ public static class DiscordEntry
         // 特定のリアクションをしたとき、褒める
         if (MasterManager.PraiseEmotes.Contains(reaction.Emote.Name))
             await DiscordManager.ExecuteAsync<PraisePresenter>(reaction, messageAuthor);
+
+        // 特定のリアクションをしたとき、慰める
+        if (MasterManager.ComfortEmotes.Contains(reaction.Emote.Name))
+            await DiscordManager.ExecuteAsync<ComfortPresenter>(reaction, messageAuthor);
     }
 
     private static async Task OnReactionRemoved(Cacheable<IUserMessage, ulong> message,
@@ -66,6 +70,10 @@ public static class DiscordEntry
         // 特定のリアクションを外したとき、褒めたのを取り消す
         if (MasterManager.PraiseEmotes.Contains(reaction.Emote.Name))
             await DiscordManager.ExecuteAsync<CancelPraisePresenter>(reaction, messageAuthor);
+
+        // 特定のリアクションを外したとき、慰めたのを取り消す
+        if (MasterManager.ComfortEmotes.Contains(reaction.Emote.Name))
+            await DiscordManager.ExecuteAsync<CancelComfortPresenter>(reaction, messageAuthor);
     }
 
     /// <summary>

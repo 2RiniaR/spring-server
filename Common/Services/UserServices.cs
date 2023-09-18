@@ -142,4 +142,64 @@ public class UserServices
         await context.SaveChangesAsync();
         return praise;
     }
+
+    /// <summary>
+    /// 他人を慰める
+    /// </summary>
+    public async Task<Comfort?> ComfortAsync(ulong targetUserId, ulong messageId, int reactionId)
+    {
+        // 自分自身を慰めることはできない
+        if (UserId == targetUserId) return null;
+
+        await using var context = new SpringDbContext();
+
+        // 既に同一条件で褒めたかどうかチェック あったら終了
+        var existComfort = await context.Set<Comfort>().FirstOrDefaultAsync(comfort =>
+            comfort.DiscordMessageId == messageId &&
+            comfort.DiscordReactionId == reactionId &&
+            comfort.UserId == UserId &&
+            comfort.TargetUserId == targetUserId);
+        if (existComfort != null) return null;
+
+        // ユーザーがいなければ作成
+        await AppServices.FindOrCreateUserAsync(UserId);
+        await AppServices.FindOrCreateUserAsync(targetUserId);
+
+        // 慰めたことを記録
+        var comfort = new Comfort
+        {
+            UserId = UserId,
+            DiscordMessageId = messageId,
+            DiscordReactionId = reactionId,
+            TargetUserId = targetUserId,
+            MarvelousScore = MasterManager.SendComfortMarvelousScore,
+            GivenPainfulScore = MasterManager.ReceiveComfortPainfulScore,
+        };
+        context.Add(comfort);
+
+        await context.SaveChangesAsync();
+        return comfort;
+    }
+
+    /// <summary>
+    /// 他人を慰めたのを取り消す
+    /// </summary>
+    public async Task<Comfort?> CancelComfortAsync(ulong targetUserId, ulong messageId, int reactionId)
+    {
+        await using var context = new SpringDbContext();
+
+        // 同一条件で慰めた記録を検索 なければ終了
+        var comfort = await context.Set<Comfort>().FirstOrDefaultAsync(comfort =>
+            comfort.DiscordMessageId == messageId &&
+            comfort.DiscordReactionId == reactionId &&
+            comfort.UserId == UserId &&
+            comfort.TargetUserId == targetUserId);
+        if (comfort == null) return null;
+
+        // 慰めた記録を削除
+        context.Remove(comfort);
+
+        await context.SaveChangesAsync();
+        return comfort;
+    }
 }
