@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using RineaR.Spring.Common;
 
@@ -7,7 +6,7 @@ namespace RineaR.Spring.Events;
 
 public class UserPresenter : DiscordMessagePresenterBase
 {
-    public SocketUser? TargetUser { get; set; }
+    public IUser? TargetUser { get; set; }
     public bool IsTotal { get; set; }
 
     protected override async Task MainAsync()
