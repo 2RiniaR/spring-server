@@ -5,7 +5,7 @@ namespace RineaR.Spring.Events;
 
 public class HelpPresenter : DiscordMessagePresenterBase
 {
-    public override async Task RunAsync()
+    protected override async Task MainAsync()
     {
         var embed = new EmbedBuilder()
             .WithColor(Color.Blue)

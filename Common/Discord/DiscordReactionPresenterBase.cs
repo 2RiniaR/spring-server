@@ -3,9 +3,8 @@ using Discord.WebSocket;
 
 namespace RineaR.Spring.Common;
 
-public abstract class DiscordReactionPresenterBase : DiscordPresenterBase
+public abstract class DiscordReactionPresenterBase : PresenterBase
 {
     public SocketReaction Reaction { get; set; } = null!;
     public IUser AuthorUser { get; set; } = null!;
-    public abstract Task RunAsync();
 }

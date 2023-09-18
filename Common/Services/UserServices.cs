@@ -67,7 +67,7 @@ public class UserServices
             .FirstOrDefaultAsync();
 
         // 本日既にログイン済みの場合はnullを返す
-        var date = TimeManager.GetApplicationDate();
+        var date = TimeManager.GetCurrentApplicationDate();
         if (lastLogin != null && lastLogin.ApplicationDate == date) return null;
 
         // ログインボーナスを付与

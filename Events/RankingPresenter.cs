@@ -5,7 +5,7 @@ namespace RineaR.Spring.Events;
 
 public class RankingPresenter : DiscordMessagePresenterBase
 {
-    public override async Task RunAsync()
+    protected override async Task MainAsync()
     {
         var users = await AppServices.RankingAsync();
 
