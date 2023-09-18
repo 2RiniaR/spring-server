@@ -48,9 +48,9 @@ public static class SchedulerManager
         RegisterInterval<T>(TimeSpan.FromDays(1), time);
     }
 
-    public static void RegisterWeekly<T>(DayOfWeek dayOfWeek, TimeSpan time) where T : SchedulerJobPresenterBase, new()
+    public static void RegisterWeekly<T>(TimeSpan time) where T : SchedulerJobPresenterBase, new()
     {
-        RegisterInterval<T>(TimeSpan.FromDays(7), TimeSpan.FromDays((int)dayOfWeek) + time);
+        RegisterInterval<T>(TimeSpan.FromDays(7), time);
     }
 
     public static DateTime GetLastRunTime(SchedulerJobRunner runner)

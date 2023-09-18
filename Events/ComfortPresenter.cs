@@ -4,7 +4,7 @@ namespace RineaR.Spring.Events;
 
 public class ComfortPresenter : DiscordReactionPresenterBase
 {
-    public override async Task RunAsync()
+    protected override async Task MainAsync()
     {
         var comfort = await UserServices.As(Reaction.UserId)
             .ComfortAsync(AuthorUser.Id, Reaction.MessageId, Reaction.Emote.GetHashCode());

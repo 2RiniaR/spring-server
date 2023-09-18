@@ -4,7 +4,7 @@ namespace RineaR.Spring.Events;
 
 public class ContributionPresenter : SchedulerJobPresenterBase
 {
-    public override async Task RunAsync()
+    protected override async Task MainAsync()
     {
         await AppServices.RecordContributionAsync();
     }

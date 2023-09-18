@@ -4,7 +4,7 @@ namespace RineaR.Spring.Events;
 
 public class WeeklyAnnouncePresenter : SchedulerJobPresenterBase
 {
-    public override async Task RunAsync()
+    protected override async Task MainAsync()
     {
         var ranking = await AppServices.RankingAsync();
     }

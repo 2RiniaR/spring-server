@@ -84,15 +84,20 @@ public static class DiscordEntry
     private class CommandDefine : ModuleBase<SocketCommandContext>
     {
         [Command("user")]
-        public async Task User(SocketUser user)
+        public async Task User(SocketUser? user = null, bool total = false)
         {
-            await DiscordManager.ExecuteAsync<UserPresenter>(Context.Message, presenter => presenter.TargetUser = user);
+            await DiscordManager.ExecuteAsync<UserPresenter>(Context.Message, presenter =>
+            {
+                presenter.TargetUser = user;
+                presenter.IsTotal = total;
+            });
         }
 
         [Command("me")]
-        public async Task Me()
+        public async Task Me(bool total = false)
         {
-            await DiscordManager.ExecuteAsync<UserPresenter>(Context.Message);
+            await DiscordManager.ExecuteAsync<UserPresenter>(Context.Message,
+                presenter => { presenter.IsTotal = total; });
         }
 
         [Command("ranking")]
