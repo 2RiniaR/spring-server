@@ -5,7 +5,6 @@ namespace RineaR.Spring.Common;
 
 public class BedIn : ActionBase
 {
-    public int? WakeUpId { get; set; }
     public WakeUp? WakeUp { get; set; }
 
     /// <summary>

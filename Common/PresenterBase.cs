@@ -40,24 +40,37 @@ public abstract class PresenterBase
             return Sanitize((user as SocketGuildUser)?.Nickname ?? user.Username);
         }
 
+        public static string ScoreDiffGroup(int marvelous, int painful, bool onCode = false)
+        {
+            var elements = new List<string>();
+            if (marvelous != 0) elements.Add(MarvelousScoreDiff(marvelous));
+            if (painful != 0) elements.Add(PainfulScoreDiff(painful));
+            var text = string.Join(" ", elements);
+            return onCode ? text : Code(text);
+        }
+
         public static string MarvelousScore(int diff, bool onCode = false)
         {
-            return onCode ? $"✨{diff}" : Code($"✨{diff}");
+            var text = $"✨{diff}";
+            return onCode ? text : Code(text);
         }
 
-        public static string MarvelousScoreDiff(int diff)
+        public static string MarvelousScoreDiff(int diff, bool onCode = false)
         {
-            return Code($"✨{diff:+#;-#;0}");
+            var text = $"✨{diff:+#;-#;0}";
+            return onCode ? text : Code(text);
         }
 
-        public static string PainfulScore(int diff)
+        public static string PainfulScore(int diff, bool onCode = false)
         {
-            return Code($"💊{diff}");
+            var text = $"💊{diff}";
+            return onCode ? text : Code(text);
         }
 
-        public static string PainfulScoreDiff(int diff)
+        public static string PainfulScoreDiff(int diff, bool onCode = false)
         {
-            return Code($"💊{diff:+#;-#;0}");
+            var text = $"💊{diff:+#;-#;0}";
+            return onCode ? text : Code(text);
         }
 
         public static string Time(TimeSpan time)

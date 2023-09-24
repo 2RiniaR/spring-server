@@ -18,12 +18,33 @@ public class UserServices
 
     public async Task<BedIn?> BedInAsync()
     {
+        var now = TimeManager.GetNow();
+        var today = TimeManager.GetCurrentApplicationDate();
+        var start = today + MasterManager.BedInStart;
+        var end = today + MasterManager.BedInEnd;
+
+        // 就寝可能な時間外だったら終了
+        if (now < start || end < now) return null;
+
         await using var context = new SpringDbContext();
 
-        var now = TimeManager.GetNow();
-        var bedIn = new BedIn
+        // 最新の就寝を取得
+        var bedIn = await context.Set<BedIn>()
+            .Where(x => x.UserId == UserId)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (bedIn != null && bedIn.ApplicationDate == today)
+        {
+            // 既に本日の就寝記録がある場合は何もしない
+            return null;
+        }
+
+        // 就寝を記録
+        bedIn = new BedIn
         {
             UserId = UserId,
+            ApplicationDate = today,
         };
         context.Add(bedIn);
 
@@ -33,18 +54,47 @@ public class UserServices
 
     public async Task<WakeUp?> WakeUpAsync()
     {
+        var now = TimeManager.GetNow();
+
         await using var context = new SpringDbContext();
 
+        // 最新の就寝を取得
         var bedIn = await context.Set<BedIn>()
             .Where(x => x.UserId == UserId)
             .OrderByDescending(x => x.CreatedAt)
+            .Take(1)
+            .Include(x => x.WakeUp)
             .FirstOrDefaultAsync();
-        if (bedIn is not { WakeUpId: null }) return null;
+
+        // まだ一度も就寝してない or 起床済み or まだ就寝可能な時間中 ならば何もしない
+        if (bedIn == null ||
+            bedIn.WakeUp != null ||
+            now < bedIn.ApplicationDate + MasterManager.BedInEnd) return null;
 
         var wakeUp = new WakeUp
         {
             UserId = UserId,
+            BedInId = bedIn.Id,
         };
+
+        // 早すぎ（夜更かし）、ちょうど良い、遅すぎのどれかを判定
+        if (now < bedIn.ApplicationDate + MasterManager.WakeUpStart)
+        {
+            wakeUp.ResultType = WakeUpResultType.TooEarly;
+            wakeUp.PainfulScore = MasterManager.WakeUpFailedPainfulScore;
+        }
+        else if (now < bedIn.ApplicationDate + MasterManager.WakeUpEnd)
+        {
+            wakeUp.ResultType = WakeUpResultType.Succeed;
+            wakeUp.MarvelousScore = MasterManager.WakeUpMarvelousScore;
+        }
+        else
+        {
+            wakeUp.ResultType = WakeUpResultType.TooLate;
+            wakeUp.PainfulScore = MasterManager.WakeUpFailedPainfulScore;
+        }
+
+        context.Add(wakeUp);
 
         await context.SaveChangesAsync();
         return wakeUp;
@@ -67,14 +117,14 @@ public class UserServices
             .FirstOrDefaultAsync();
 
         // 本日既にログイン済みの場合はnullを返す
-        var date = TimeManager.GetCurrentApplicationDate();
-        if (lastLogin != null && lastLogin.ApplicationDate == date) return null;
+        var today = TimeManager.GetCurrentApplicationDate();
+        if (lastLogin != null && lastLogin.ApplicationDate == today) return null;
 
         // ログインボーナスを付与
         var login = new Login
         {
             UserId = UserId,
-            ApplicationDate = date,
+            ApplicationDate = today,
             MarvelousScore = MasterManager.LoginMarvelousScore,
         };
         context.Add(login);
