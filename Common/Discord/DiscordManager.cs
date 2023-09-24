@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 
 namespace RineaR.Spring.Common;
@@ -10,8 +9,6 @@ public static class DiscordManager
     {
         GatewayIntents = GatewayIntents.All,
     });
-
-    private static readonly CommandService Commands = new();
 
     public static async Task InitializeAsync()
     {
@@ -26,33 +23,20 @@ public static class DiscordManager
         return Task.CompletedTask;
     }
 
-    public static void RegisterCommands<T>() where T : ModuleBase<SocketCommandContext>
-    {
-        Commands.AddModuleAsync<T>(null);
-    }
-
-    public static async Task ExecuteMatchedCommandAsync(SocketUserMessage message, string prefix)
-    {
-        var argPos = 0;
-        if (!message.HasStringPrefix(prefix, ref argPos)) return;
-
-        var context = new SocketCommandContext(Client, message);
-        await Commands.ExecuteAsync(context, argPos, null);
-    }
-
-    public static async Task ExecuteAsync<T>(SocketUserMessage message, Action<T>? onInitialize = null)
+    public static async Task ExecuteAsync<T>(SocketUserMessage message, Func<T, Task>? onInitializeAsync = null)
         where T : DiscordMessagePresenterBase, new()
     {
         var presenter = new T { Message = message };
-        onInitialize?.Invoke(presenter);
+        if (onInitializeAsync != null) await onInitializeAsync.Invoke(presenter);
         await presenter.RunAsync();
     }
 
-    public static async Task ExecuteAsync<T>(SocketReaction reaction, IUser authorUser, Action<T>? onInitialize = null)
+    public static async Task ExecuteAsync<T>(SocketReaction reaction, IUser authorUser,
+        Func<T, Task>? onInitializeAsync = null)
         where T : DiscordReactionPresenterBase, new()
     {
         var presenter = new T { Reaction = reaction, AuthorUser = authorUser };
-        onInitialize?.Invoke(presenter);
+        if (onInitializeAsync != null) await onInitializeAsync.Invoke(presenter);
         await presenter.RunAsync();
     }
 }

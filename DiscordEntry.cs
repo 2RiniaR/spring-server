@@ -1,6 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using CommandLine;
+using CommandLine.Text;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using RineaR.Spring.Common;
 using RineaR.Spring.Events;
@@ -11,7 +11,6 @@ public static class DiscordEntry
 {
     public static void RegisterEvents()
     {
-        DiscordManager.RegisterCommands<CommandDefine>();
         DiscordManager.Client.MessageReceived += OnMessageReceived;
         DiscordManager.Client.ReactionAdded += OnReactionAdded;
         DiscordManager.Client.ReactionRemoved += OnReactionRemoved;
@@ -26,7 +25,7 @@ public static class DiscordEntry
         await DiscordManager.ExecuteAsync<LoginPresenter>(userMessage);
 
         // コマンド実行
-        await DiscordManager.ExecuteMatchedCommandAsync(userMessage, MasterManager.DiscordCommandPrefix);
+        await CommandDefine.RunAsync(userMessage);
 
         // 起床
         await DiscordManager.ExecuteAsync<GreetPresenter>(userMessage);
@@ -75,41 +74,147 @@ public static class DiscordEntry
         if (MasterManager.ComfortEmotes.Contains(reaction.Emote.Name))
             await DiscordManager.ExecuteAsync<CancelComfortPresenter>(reaction, messageAuthor);
     }
+}
 
-    /// <summary>
-    /// 各コマンドの定義
-    /// </summary>
-    [SuppressMessage("ReSharper", "UnusedMember.Local")]
-    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
-    private class CommandDefine : ModuleBase<SocketCommandContext>
+/// <summary>
+/// 各コマンドの定義
+/// </summary>
+internal static class CommandDefine
+{
+    private static readonly Parser CustomParser = new(settings =>
     {
-        [Command("user")]
-        public async Task User(SocketUser? user = null, bool total = false)
-        {
-            await DiscordManager.ExecuteAsync<UserPresenter>(Context.Message, presenter =>
-            {
-                presenter.TargetUser = user;
-                presenter.IsTotal = total;
-            });
-        }
+        settings.AutoHelp = false;
+        settings.AutoVersion = false;
+        settings.HelpWriter = null;
+    });
 
-        [Command("me")]
-        public async Task Me(bool total = false)
-        {
-            await DiscordManager.ExecuteAsync<UserPresenter>(Context.Message,
-                presenter => { presenter.IsTotal = total; });
-        }
-
-        [Command("ranking")]
-        public async Task Ranking()
-        {
-            await DiscordManager.ExecuteAsync<RankingPresenter>(Context.Message);
-        }
-
-        [Command("help")]
-        public async Task Help()
-        {
-            await DiscordManager.ExecuteAsync<HelpPresenter>(Context.Message);
-        }
+    static CommandDefine()
+    {
+        SentenceBuilder.Factory = () => new LocalizableSentenceBuilder();
     }
+
+    public static async Task RunAsync(SocketUserMessage message)
+    {
+        if (!message.Content.StartsWith(MasterManager.DiscordCommandPrefix)) return;
+
+        var args = message.Content.Split(' ').Skip(1).ToArray();
+        var parserResult = CustomParser.ParseArguments(args,
+            typeof(UserOptions), typeof(MeOptions), typeof(RankingOptions), typeof(HelpOptions));
+
+        var helpText = HelpText.AutoBuild(parserResult, h =>
+            {
+                h.AdditionalNewLineAfterOption = false;
+                h.Heading = "";
+                h.Copyright = "";
+                h.AutoHelp = false;
+                h.AutoVersion = false;
+                return h;
+            },
+            e => e, false, 50);
+
+        await parserResult.WithNotParsedAsync(async _ =>
+        {
+            var text = helpText.ToString();
+            if (string.IsNullOrEmpty(text)) return;
+            await message.ReplyAsync(
+                embed: new EmbedBuilder().WithDescription($"```{text}```").Build());
+        });
+
+        await parserResult.MapResult(
+            (UserOptions options) => DiscordManager.ExecuteAsync<UserPresenter>(message, async presenter =>
+            {
+                presenter.TargetUser = await message.Channel.GetUserAsync(options.User);
+                presenter.IsTotal = options.Total;
+            }),
+            (MeOptions options) => DiscordManager.ExecuteAsync<UserPresenter>(message, presenter =>
+            {
+                presenter.IsTotal = options.Total;
+                return Task.CompletedTask;
+            }),
+            (RankingOptions options) =>
+                DiscordManager.ExecuteAsync<RankingPresenter>(message),
+            (HelpOptions options) =>
+                DiscordManager.ExecuteAsync<HelpPresenter>(message),
+            errs => Task.CompletedTask);
+    }
+
+    [Verb("user", HelpText = "指定したユーザーの情報を表示する")]
+    private class UserOptions
+    {
+        [Value(0, Required = true, HelpText = "ユーザーのDiscord ID", MetaName = "Discord ID")]
+        public ulong User { get; set; }
+
+        [Option("total", Default = false, HelpText = "指定した場合、累計の情報を表示する")]
+        public bool Total { get; set; }
+    }
+
+    [Verb("me", HelpText = "自分の情報を表示する")]
+    private class MeOptions
+    {
+        [Option("total", Default = false)] public bool Total { get; set; }
+    }
+
+    [Verb("ranking", HelpText = "ランキングを表示する")]
+    private class RankingOptions
+    {
+    }
+
+    [Verb("help", HelpText = "ヘルプを表示する")]
+    private class HelpOptions
+    {
+    }
+}
+
+public class LocalizableSentenceBuilder : SentenceBuilder
+{
+    public override Func<string> RequiredWord => () => "【必須】";
+    public override Func<string> OptionGroupWord => () => "【オプション】";
+    public override Func<string> ErrorsHeadingText => () => "【エラー】";
+    public override Func<string> UsageHeadingText => () => "【ヘルプ】";
+    public override Func<bool, string> HelpCommandText => isOption => isOption ? "【オプション】" : "【ヘルプ】";
+    public override Func<bool, string> VersionCommandText => _ => "【バージョン】";
+
+    public override Func<Error, string> FormatError => error =>
+    {
+        switch (error.Tag)
+        {
+            case ErrorType.BadFormatTokenError:
+                return $"'{((BadFormatTokenError)error).Token}' は認識できません。";
+            case ErrorType.MissingValueOptionError:
+                return $"引数 '{((MissingValueOptionError)error).NameInfo.NameText}' を指定してください。";
+            case ErrorType.UnknownOptionError:
+                return $"'{((UnknownOptionError)error).Token}' は認識できないオプションです。";
+            case ErrorType.MissingRequiredOptionError:
+                var errMissing = (MissingRequiredOptionError)error;
+                if (errMissing.NameInfo.Equals(NameInfo.EmptyName)) return "必須のオプションが存在しません。";
+                return $"オプション '{errMissing.NameInfo.NameText}' を指定してください。";
+            case ErrorType.BadFormatConversionError:
+                var badFormat = (BadFormatConversionError)error;
+                if (badFormat.NameInfo.Equals(NameInfo.EmptyName)) return "オプションの形式が不正です。";
+                return $"オプション '{badFormat.NameInfo.NameText}' の形式に誤りがないか確認してください。";
+            case ErrorType.SequenceOutOfRangeError:
+                var seqOutRange = (SequenceOutOfRangeError)error;
+                if (seqOutRange.NameInfo.Equals(NameInfo.EmptyName)) return "オプションに指定した値の数が不正です。";
+                return $"オプション '{seqOutRange.NameInfo.NameText}' に指定した値の数が不正です。";
+            case ErrorType.BadVerbSelectedError:
+                return $"コマンド '{((BadVerbSelectedError)error).Token}' は存在しません。";
+            case ErrorType.NoVerbSelectedError:
+                return "コマンドを指定してください。";
+            case ErrorType.RepeatedOptionError:
+                return $"オプション '{((RepeatedOptionError)error).NameInfo.NameText}' は1回のみ指定してください。";
+            case ErrorType.SetValueExceptionError:
+                var setValueError = (SetValueExceptionError)error;
+                return $"'{setValueError.NameInfo.NameText}': {setValueError.Exception.Message}";
+            case ErrorType.MissingGroupOptionError:
+                var missingGroupOptionError = (MissingGroupOptionError)error;
+                var options = string.Join(", ", missingGroupOptionError.Names.Select(n => n.NameText));
+                return $"'{missingGroupOptionError.Group}' ({options}) の中から最低1つのオプションを指定してください。";
+            case ErrorType.MultipleDefaultVerbsError:
+                return MultipleDefaultVerbsError.ErrorMessage;
+            default:
+                return "不明なエラーです。";
+        }
+    };
+
+    public override Func<IEnumerable<MutuallyExclusiveSetError>, string> FormatMutuallyExclusiveSetErrors => _ => "";
 }

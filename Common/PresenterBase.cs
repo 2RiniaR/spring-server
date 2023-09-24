@@ -69,6 +69,7 @@ public abstract class PresenterBase
         }
         catch (Exception e)
         {
+            await Console.Error.WriteLineAsync("========================================\n");
             Console.Error.Write(e);
         }
 

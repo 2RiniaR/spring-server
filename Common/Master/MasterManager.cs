@@ -2,7 +2,7 @@
 
 public static class MasterManager
 {
-    public static string DiscordCommandPrefix => "!erai ";
+    public static string DiscordCommandPrefix => "!erai";
     public static TimeSpan WeeklyReset => TimeSpan.FromDays((int)DayOfWeek.Monday) + DailyReset;
     public static TimeSpan DailyReset => new(0, 5, 00, 00);
     public static TimeSpan BedInStart => new(0, 18, 00, 00);
