@@ -8,8 +8,7 @@ public static class TimeManager
     /// </summary>
     public static DateTime GetNow()
     {
-        return DateTime.Today + TimeSpan.FromHours(8);
-        // return DateTime.Now;
+        return DateTime.Now;
     }
 
     /// <summary>
