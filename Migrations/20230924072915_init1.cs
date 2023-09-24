@@ -59,13 +59,13 @@ namespace RineaR.Spring.Migrations
                     DiscordMessageId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
                     DiscordReactionId = table.Column<int>(type: "int", nullable: true),
                     TargetUserId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
-                    GivenPainfulScore = table.Column<int>(type: "int", nullable: true),
+                    TargetPainfulScore = table.Column<int>(type: "int", nullable: true),
                     Count = table.Column<int>(type: "int", nullable: true),
                     Login_ApplicationDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     Praise_DiscordMessageId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
                     Praise_DiscordReactionId = table.Column<int>(type: "int", nullable: true),
                     Praise_TargetUserId = table.Column<ulong>(type: "bigint unsigned", nullable: true),
-                    GivenMarvelousScore = table.Column<int>(type: "int", nullable: true),
+                    TargetMarvelousScore = table.Column<int>(type: "int", nullable: true),
                     BedInId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>

@@ -113,7 +113,7 @@ public class UserServices
             DiscordReactionId = reactionId,
             TargetUserId = targetUserId,
             MarvelousScore = MasterManager.SendPraiseMarvelousScore,
-            GivenMarvelousScore = MasterManager.ReceivePraiseMarvelousScore,
+            TargetMarvelousScore = MasterManager.ReceivePraiseMarvelousScore,
         };
         context.Add(praise);
 
@@ -173,7 +173,7 @@ public class UserServices
             DiscordReactionId = reactionId,
             TargetUserId = targetUserId,
             MarvelousScore = MasterManager.SendComfortMarvelousScore,
-            GivenPainfulScore = MasterManager.ReceiveComfortPainfulScore,
+            TargetPainfulScore = MasterManager.ReceiveComfortPainfulScore,
         };
         context.Add(comfort);
 
