@@ -8,6 +8,10 @@ public class GreetPresenter : DiscordMessagePresenterBase
     protected override async Task MainAsync()
     {
         var wakeUp = await UserServices.As(Message.Author.Id).WakeUpAsync();
-        if (wakeUp != null) await Message.ReplyAsync($"{Message.Author.Username}、おはよう！ ✨{wakeUp.MarvelousScore}");
+        if (wakeUp == null) return;
+
+        var name = Format.Sanitize(Message.Author.Username);
+        var score = Format.MarvelousScoreDiff(wakeUp.MarvelousScore);
+        await Message.ReplyAsync($"{name}、おはよう！ {score}");
     }
 }

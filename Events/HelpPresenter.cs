@@ -18,40 +18,29 @@ public class HelpPresenter : DiscordMessagePresenterBase
         await Message.Author.SendMessageAsync(embed: embed);
     }
 
-    public string Text
+    public static string Text
         => $"""
-            あなたのえらさを表す「{MarvelousScoreIcon}{MarvelousScoreName}」、つらさを表す「{PainfulScoreIcon}{PainfulScoreName}」を集めるBOTです。
+            あなたのえらさを表す「{Format.MarvelousScoreIcon}{Format.MarvelousScoreName}」、つらさを表す「{Format.PainfulScoreIcon}{Format.PainfulScoreName}」を集めるBOTです。
 
-            ### 👏 褒める {MarvelousScoreDiffText(MasterManager.SendPraiseMarvelousScore)} （相手に{MarvelousScoreDiffText(MasterManager.ReceivePraiseMarvelousScore)}）
-
+            ### 👏 褒める {Format.MarvelousScoreDiff(MasterManager.SendPraiseMarvelousScore)} （相手に{Format.MarvelousScoreDiff(MasterManager.ReceivePraiseMarvelousScore)}）
             他人のメッセージにリアクション（{string.Join("", MasterManager.PraiseEmotes)}）を付ける
 
-            ### 😥 慰める {MarvelousScoreDiffText(MasterManager.SendComfortMarvelousScore)} （相手に{PainfulScoreDiffText(MasterManager.ReceiveComfortPainfulScore)}）
-
+            ### 😥 慰める {Format.MarvelousScoreDiff(MasterManager.SendComfortMarvelousScore)} （相手に{Format.PainfulScoreDiff(MasterManager.ReceiveComfortPainfulScore)}）
             他人のメッセージにリアクション（{string.Join("", MasterManager.ComfortEmotes)}）を付ける
 
-            ### 😎 生きる {MarvelousScoreDiffText(MasterManager.LoginMarvelousScore)}
-
+            ### 😎 生きる {Format.MarvelousScoreDiff(MasterManager.LoginMarvelousScore)}
             その日最初のメッセージを送る
 
-            ### 💦 頑張る {MarvelousScoreDiffText(MasterManager.DailyContributionMarvelousScore)}
-
-            GitHubにContributionを1日1回以上する ※GitHub IDの登録が必要
-
-            ### 💤健康な睡眠を取る {MarvelousScoreDiffText(MasterManager.WakeUpMarvelousScore)} （失敗時は {PainfulScoreDiffText(MasterManager.WakeUpFailedPainfulScore)}）
-
-            `{TimeText(MasterManager.BedInStart)} ~ {TimeText(MasterManager.BedInEnd)}`に「{MasterManager.BedInPhrase}」と送り、次のメッセージを`{TimeText(MasterManager.WakeUpStart)} ~ {TimeText(MasterManager.WakeUpEnd)}`に送る
+            ### 💤健康な睡眠を取る {Format.MarvelousScoreDiff(MasterManager.WakeUpMarvelousScore)} （失敗時は {Format.PainfulScoreDiff(MasterManager.WakeUpFailedPainfulScore)}）
+            `{Format.Time(MasterManager.BedInStart)} ~ {Format.Time(MasterManager.BedInEnd)}`に「{MasterManager.BedInPhrase}」と送り、次のメッセージを`{Format.Time(MasterManager.WakeUpStart)} ~ {Format.Time(MasterManager.WakeUpEnd)}`に送る
 
             ### コマンド
-             
-             - `!erai me`      : 自分のステータスを表示する
-             - `!erai ranking` : ランキングを表示する
-             - `!erai help`    : ヘルプを表示する
-             - `!erai github register [GitHub ID]` : GitHub IDを登録する
-             - `!erai github unregister`           : GitHub IDの登録を解除する
+             - {Format.Code("!erai user [ユーザーID]")} : 指定したユーザーのステータスを表示する
+             - {Format.Code("!erai me")}      : 自分のステータスを表示する
+             - {Format.Code("!erai ranking")} : ランキングを表示する
+             - {Format.Code("!erai help")}    : ヘルプを表示する
                      
             ### 開発: Rinia（@2RIniaR）
-                     
             問題点・改善案は、[こちら](https://github.com/2RiniaR/spring-server/issues)から報告をお願いします。
             """;
 }

@@ -19,7 +19,7 @@ public static class AppData
 
         return users.Select(user =>
                 (user, score: User.MarvelousScore(actionsLookup[user.DiscordID], praisesLookup[user.DiscordID])))
-            .OrderBy(x => x.score)
+            .OrderByDescending(x => x.score)
             .Take(count)
             .ToList();
     }
@@ -39,7 +39,7 @@ public static class AppData
 
         return users.Select(user =>
                 (user, score: User.PainfulScore(actionsLookup[user.DiscordID], comfortsLookup[user.DiscordID])))
-            .OrderBy(x => x.score)
+            .OrderByDescending(x => x.score)
             .Take(count)
             .ToList();
     }

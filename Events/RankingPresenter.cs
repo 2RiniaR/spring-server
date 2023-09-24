@@ -10,24 +10,32 @@ public class RankingPresenter : DiscordMessagePresenterBase
 
     protected override async Task MainAsync()
     {
-        var users = await AppData.MarvelousScoreRankingAsync();
+        // 集計開始日時
+        var periodStart = IsTotal ? DateTime.MinValue : TimeManager.GetCurrentApplicationWeekStart();
+        var periodEnd = IsTotal ? DateTime.MaxValue : TimeManager.GetCurrentApplicationWeekEnd();
+
+        var users = await AppData.MarvelousScoreRankingAsync(periodStart, 8);
 
         var builder = new StringBuilder();
         var order = 1;
         foreach (var (user, score) in users)
         {
-            var pointString = Math.Min(score, 999).ToString("N");
-            var whiteSpace = Math.Max(0, 6 - pointString.Length * 2);
+            var scoreText = Format.MarvelousScore(Math.Min(score, 999), true);
+            var whiteSpace = Math.Max(0, 8 - scoreText.Length * 2);
             var line =
-                $"#{order:D2} - {"".PadLeft(whiteSpace, ' ')}✨{pointString}  {MentionUtils.MentionUser(user.DiscordID)}";
+                Format.Code($"#{order:D2} - {"".PadLeft(whiteSpace, ' ')}{scoreText}") + "  " +
+                MentionUtils.MentionUser(user.DiscordID);
             builder.AppendLine(line);
             order++;
         }
 
+        var totalPeriodText = IsTotal ? "全期間" : $"{Format.DateTime(periodStart)} ～ {Format.DateTime(periodEnd)}";
+
         var embed = new EmbedBuilder()
             .WithColor(Color.LightOrange)
-            .WithTitle($"{MarvelousScoreIcon}{MarvelousScoreName} ランキング")
-            .AddField("", builder.ToString())
+            .WithTitle($"{Format.MarvelousScoreIcon}{Format.MarvelousScoreName}")
+            .WithDescription($"集計期間: {Format.Code(totalPeriodText)}")
+            .AddField("ランキング", builder.ToString())
             .WithCurrentTimestamp()
             .Build();
 

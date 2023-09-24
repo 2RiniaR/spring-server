@@ -128,11 +128,15 @@ internal static class CommandDefine
             }),
             (MeOptions options) => DiscordManager.ExecuteAsync<UserPresenter>(message, presenter =>
             {
+                presenter.TargetUser = message.Author;
                 presenter.IsTotal = options.Total;
                 return Task.CompletedTask;
             }),
-            (RankingOptions options) =>
-                DiscordManager.ExecuteAsync<RankingPresenter>(message),
+            (RankingOptions options) => DiscordManager.ExecuteAsync<RankingPresenter>(message, presenter =>
+            {
+                presenter.IsTotal = options.Total;
+                return Task.CompletedTask;
+            }),
             (HelpOptions options) =>
                 DiscordManager.ExecuteAsync<HelpPresenter>(message),
             errs => Task.CompletedTask);
@@ -157,6 +161,8 @@ internal static class CommandDefine
     [Verb("ranking", HelpText = "ランキングを表示する")]
     private class RankingOptions
     {
+        [Option("total", Default = false, HelpText = "指定した場合、累計の情報を表示する")]
+        public bool Total { get; set; }
     }
 
     [Verb("help", HelpText = "ヘルプを表示する")]

@@ -10,7 +10,11 @@ public class UserPresenter : DiscordMessagePresenterBase
 
     protected override async Task MainAsync()
     {
-        TargetUser ??= Message.Author;
+        if (TargetUser == null || TargetUser.IsBot)
+        {
+            await Message.ReplyAsync(embed: ErrorEmbed("ユーザーが見つかりませんでした。"));
+            return;
+        }
 
         // ユーザーがいなければ作る
         await AppServices.FindOrCreateUserAsync(TargetUser.Id);
@@ -39,16 +43,16 @@ public class UserPresenter : DiscordMessagePresenterBase
                 await UserData.As(TargetUser.Id).DailyContributionCountAsync(periodStart)),
         };
 
-        var totalPeriodText = IsTotal ? "全期間" : $"{DateTimeText(periodStart)} ～ {DateTimeText(periodEnd)}";
+        var totalPeriodText = IsTotal ? "全期間" : $"{Format.DateTime(periodStart)} ～ {Format.DateTime(periodEnd)}";
 
         var embed = new EmbedBuilder()
             .WithColor(Color.LightOrange)
-            .WithTitle(UserNameText(TargetUser))
+            .WithTitle(Format.UserName(TargetUser))
             .WithThumbnailUrl(TargetUser.GetAvatarUrl() ?? TargetUser.GetDefaultAvatarUrl())
-            .WithDescription($"集計期間: `{totalPeriodText}`")
-            .AddField($"{MarvelousScoreName}", MarvelousScoreText(marvelousScore), true)
-            .AddField($"{PainfulScoreName}", PainfulScoreText(painfulScore), true)
-            .AddField("統計", $"```{IntTableText(stats)}```")
+            .WithDescription($"集計期間: {Format.Code(totalPeriodText)}")
+            .AddField($"{Format.MarvelousScoreName}", Format.MarvelousScore(marvelousScore), true)
+            .AddField($"{Format.PainfulScoreName}", Format.PainfulScore(painfulScore), true)
+            .AddField("統計", $"```{Format.Table(stats)}```")
             .WithCurrentTimestamp()
             .Build();
 
