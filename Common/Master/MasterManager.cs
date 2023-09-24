@@ -11,7 +11,7 @@ public static class MasterManager
     public static TimeSpan WakeUpStart => new(1, 4, 00, 00);
     public static TimeSpan WakeUpEnd => new(1, 11, 00, 00);
     public static string[] PraiseEmotes => new[] { "👏", "👍", "🎊", "🎉", "🙌", "✨", "💪", "⭐" };
-    public static string[] ComfortEmotes => new[] { "😥", "😱", "🍵", "🛡" };
+    public static string[] ComfortEmotes => new[] { "😥", "😱", "🍵" };
 
     public static int LoginMarvelousScore => 1;
     public static int WakeUpMarvelousScore => 1;
