@@ -90,8 +90,7 @@ internal static class CommandDefine
 
     static CommandDefine()
     {
-        // ToDo: localizeする
-        // SentenceBuilder.Factory = () => new SentenceBuilder();
+        SentenceBuilder.Factory = () => new LocalizableSentenceBuilder();
     }
 
     public static async Task RunAsync(SocketUserMessage message)
@@ -111,13 +110,12 @@ internal static class CommandDefine
                 h.AutoVersion = false;
                 return h;
             },
-            e => { return e; }, false, 50);
+            e => e, false, 50);
 
         await parserResult.WithNotParsedAsync(async _ =>
         {
             var text = helpText.ToString();
             if (string.IsNullOrEmpty(text)) return;
-            // ToDo: 強制的に各行に "  " が入るので、それを削除したい
             await message.ReplyAsync(
                 embed: new EmbedBuilder().WithDescription($"```{text}```").Build());
         });
@@ -165,4 +163,58 @@ internal static class CommandDefine
     private class HelpOptions
     {
     }
+}
+
+public class LocalizableSentenceBuilder : SentenceBuilder
+{
+    public override Func<string> RequiredWord => () => "【必須】";
+    public override Func<string> OptionGroupWord => () => "【オプション】";
+    public override Func<string> ErrorsHeadingText => () => "【エラー】";
+    public override Func<string> UsageHeadingText => () => "【ヘルプ】";
+    public override Func<bool, string> HelpCommandText => isOption => isOption ? "【オプション】" : "【ヘルプ】";
+    public override Func<bool, string> VersionCommandText => _ => "【バージョン】";
+
+    public override Func<Error, string> FormatError => error =>
+    {
+        switch (error.Tag)
+        {
+            case ErrorType.BadFormatTokenError:
+                return $"'{((BadFormatTokenError)error).Token}' は認識できません。";
+            case ErrorType.MissingValueOptionError:
+                return $"引数 '{((MissingValueOptionError)error).NameInfo.NameText}' を指定してください。";
+            case ErrorType.UnknownOptionError:
+                return $"'{((UnknownOptionError)error).Token}' は認識できないオプションです。";
+            case ErrorType.MissingRequiredOptionError:
+                var errMissing = (MissingRequiredOptionError)error;
+                if (errMissing.NameInfo.Equals(NameInfo.EmptyName)) return "必須のオプションが存在しません。";
+                return $"オプション '{errMissing.NameInfo.NameText}' を指定してください。";
+            case ErrorType.BadFormatConversionError:
+                var badFormat = (BadFormatConversionError)error;
+                if (badFormat.NameInfo.Equals(NameInfo.EmptyName)) return "オプションの形式が不正です。";
+                return $"オプション '{badFormat.NameInfo.NameText}' の形式に誤りがないか確認してください。";
+            case ErrorType.SequenceOutOfRangeError:
+                var seqOutRange = (SequenceOutOfRangeError)error;
+                if (seqOutRange.NameInfo.Equals(NameInfo.EmptyName)) return "オプションに指定した値の数が不正です。";
+                return $"オプション '{seqOutRange.NameInfo.NameText}' に指定した値の数が不正です。";
+            case ErrorType.BadVerbSelectedError:
+                return $"コマンド '{((BadVerbSelectedError)error).Token}' は存在しません。";
+            case ErrorType.NoVerbSelectedError:
+                return "コマンドを指定してください。";
+            case ErrorType.RepeatedOptionError:
+                return $"オプション '{((RepeatedOptionError)error).NameInfo.NameText}' は1回のみ指定してください。";
+            case ErrorType.SetValueExceptionError:
+                var setValueError = (SetValueExceptionError)error;
+                return $"'{setValueError.NameInfo.NameText}': {setValueError.Exception.Message}";
+            case ErrorType.MissingGroupOptionError:
+                var missingGroupOptionError = (MissingGroupOptionError)error;
+                var options = string.Join(", ", missingGroupOptionError.Names.Select(n => n.NameText));
+                return $"'{missingGroupOptionError.Group}' ({options}) の中から最低1つのオプションを指定してください。";
+            case ErrorType.MultipleDefaultVerbsError:
+                return MultipleDefaultVerbsError.ErrorMessage;
+            default:
+                return "不明なエラーです。";
+        }
+    };
+
+    public override Func<IEnumerable<MutuallyExclusiveSetError>, string> FormatMutuallyExclusiveSetErrors => _ => "";
 }
