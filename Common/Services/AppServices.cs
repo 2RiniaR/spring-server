@@ -4,13 +4,6 @@ namespace RineaR.Spring.Common;
 
 public static class AppServices
 {
-    public static async Task<IReadOnlyList<User>> RankingAsync()
-    {
-        await using var context = new SpringDbContext();
-        var users = await context.Set<User>().Include(user => user.Actions).ToListAsync();
-        return users.OrderBy(user => user.TotalScore).ToList();
-    }
-
     public static async Task<IReadOnlyList<DailyContribution>> RecordContributionAsync()
     {
         await using var context = new SpringDbContext();

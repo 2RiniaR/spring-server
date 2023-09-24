@@ -7,8 +7,20 @@ public class User
 {
     public ulong DiscordID { get; set; }
     public string? GitHubID { get; set; }
-    public IEnumerable<ActionBase> Actions { get; } = new List<ActionBase>();
-    public int TotalScore => Actions.Sum(x => x.MarvelousScore);
+
+    public static int MarvelousScore(IEnumerable<ActionBase> actions, IEnumerable<Praise> praises)
+    {
+        var actionScore = actions.Sum(x => x.MarvelousScore);
+        var praiseScore = praises.Sum(x => x.TargetMarvelousScore);
+        return actionScore + praiseScore;
+    }
+
+    public static int PainfulScore(IEnumerable<ActionBase> actions, IEnumerable<Comfort> comforts)
+    {
+        var actionScore = actions.Sum(x => x.PainfulScore);
+        var praiseScore = comforts.Sum(x => x.TargetPainfulScore);
+        return actionScore + praiseScore;
+    }
 }
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
@@ -16,6 +28,5 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.HasKey(x => x.DiscordID);
-        builder.HasMany<ActionBase>(x => x.Actions).WithOne(x => x.User).HasForeignKey(x => x.UserId).IsRequired();
     }
 }

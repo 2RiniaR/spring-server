@@ -11,7 +11,7 @@ using RineaR.Spring.Common;
 namespace RineaR.Spring.Migrations
 {
     [DbContext(typeof(SpringDbContext))]
-    [Migration("20230917223658_init1")]
+    [Migration("20230924072915_init1")]
     partial class init1
     {
         /// <inheritdoc />
@@ -106,7 +106,7 @@ namespace RineaR.Spring.Migrations
                     b.Property<int>("DiscordReactionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("GivenPainfulScore")
+                    b.Property<int>("TargetPainfulScore")
                         .HasColumnType("int");
 
                     b.Property<ulong>("TargetUserId")
@@ -153,7 +153,7 @@ namespace RineaR.Spring.Migrations
                     b.Property<int>("DiscordReactionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("GivenMarvelousScore")
+                    b.Property<int>("TargetMarvelousScore")
                         .HasColumnType("int");
 
                     b.Property<ulong>("TargetUserId")
@@ -192,7 +192,7 @@ namespace RineaR.Spring.Migrations
             modelBuilder.Entity("RineaR.Spring.Common.ActionBase", b =>
                 {
                     b.HasOne("RineaR.Spring.Common.User", "User")
-                        .WithMany("Actions")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -229,11 +229,6 @@ namespace RineaR.Spring.Migrations
                         .HasForeignKey("RineaR.Spring.Common.WakeUp", "BedInId");
 
                     b.Navigation("BedIn");
-                });
-
-            modelBuilder.Entity("RineaR.Spring.Common.User", b =>
-                {
-                    b.Navigation("Actions");
                 });
 
             modelBuilder.Entity("RineaR.Spring.Common.BedIn", b =>

@@ -6,6 +6,5 @@ public class WeeklyAnnouncePresenter : SchedulerJobPresenterBase
 {
     protected override async Task MainAsync()
     {
-        var ranking = await AppServices.RankingAsync();
     }
 }

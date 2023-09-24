@@ -9,7 +9,7 @@ public class Praise : ActionBase
     public int DiscordReactionId { get; set; }
     public ulong TargetUserId { get; set; }
     public User? TargetUser { get; set; }
-    public int GivenMarvelousScore { get; set; }
+    public int TargetMarvelousScore { get; set; }
 }
 
 public class PraiseConfiguration : IEntityTypeConfiguration<Praise>

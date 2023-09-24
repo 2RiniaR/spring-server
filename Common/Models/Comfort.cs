@@ -9,7 +9,7 @@ public class Comfort : ActionBase
     public int DiscordReactionId { get; set; }
     public ulong TargetUserId { get; set; }
     public User? TargetUser { get; set; }
-    public int GivenPainfulScore { get; set; }
+    public int TargetPainfulScore { get; set; }
 }
 
 public class ComfortConfiguration : IEntityTypeConfiguration<Comfort>

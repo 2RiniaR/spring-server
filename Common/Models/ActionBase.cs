@@ -25,6 +25,7 @@ public class ActionBaseConfiguration : IEntityTypeConfiguration<ActionBase>
             .HasValue<Comfort>("Comfort")
             .HasValue<DailyContribution>("DailyContribution");
 
+        builder.HasOne(x => x.User);
         builder.Property(x => x.CreatedAt).ValueGeneratedOnAdd();
     }
 }
