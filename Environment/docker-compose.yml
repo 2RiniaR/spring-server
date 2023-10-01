@@ -1,0 +1,39 @@
+﻿version: "3"
+
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root  # Change this
+      MYSQL_DATABASE: database  # Change this
+      MYSQL_USER: user  # Change this
+      MYSQL_PASSWORD: password  # Change this
+    ports:
+      - 33060:3306  # Change this
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "user", "-ppassword" ]  # Change this
+      timeout: 3s
+      retries: 10
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/conf.d:/etc/mysql/conf.d
+
+  app:
+    image: watano1168/spring-server:latest
+    environment:
+      DISCORD_SECRET: SECRET  # Change this
+      MYSQL_CONNECTION_STRING: Server=db;Uid=user;Pwd=password;Database=database;Port=3306;  # Change this
+    depends_on:
+      db:
+        condition: service_healthy
+
+  migration:
+    image: watano1168/spring-server-migration:latest
+    environment:
+      MYSQL_CONNECTION_STRING: Server=db;Uid=user;Pwd=password;Database=database;Port=3306;  # Change this
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - donotstart
