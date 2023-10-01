@@ -1,0 +1,5 @@
+﻿#!/bin/bash
+
+cd "$(dirname "$0")"
+docker pull watano1168/spring-server-migration
+docker compose run --rm migration
