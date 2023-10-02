@@ -24,6 +24,7 @@ services:
     environment:
       DISCORD_SECRET: SECRET  # Change this
       MYSQL_CONNECTION_STRING: Server=db;Uid=user;Pwd=password;Database=database;Port=3306;  # Change this
+      TZ: Asia/Tokyo
     depends_on:
       db:
         condition: service_healthy

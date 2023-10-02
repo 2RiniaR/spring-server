@@ -8,7 +8,7 @@ public static class TimeManager
     /// </summary>
     public static DateTime GetNow()
     {
-        return DateTime.Now;
+        return DateTime.Now.ToLocalTime();
     }
 
     /// <summary>
