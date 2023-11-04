@@ -16,12 +16,12 @@ public static class TimeManager
     /// </summary>
     public static DateTime GetCurrentApplicationDate()
     {
-        return GetNow().AsInterval(TimeSpan.FromDays(1), MasterManager.DailyReset);
+        return GetNow().AsDate(MasterManager.DailyReset);
     }
 
     public static DateTime GetCurrentApplicationDateStart()
     {
-        return GetNow().AsInterval(TimeSpan.FromDays(1), MasterManager.DailyReset, true);
+        return GetCurrentApplicationDate() + MasterManager.DailyReset;
     }
 
     public static DateTime GetCurrentApplicationDateEnd()
@@ -34,12 +34,12 @@ public static class TimeManager
     /// </summary>
     public static DateTime GetCurrentApplicationWeek()
     {
-        return GetNow().AsInterval(TimeSpan.FromDays(7), MasterManager.WeeklyReset);
+        return GetNow().AsWeek(MasterManager.WeeklyReset);
     }
 
     public static DateTime GetCurrentApplicationWeekStart()
     {
-        return GetNow().AsInterval(TimeSpan.FromDays(7), MasterManager.WeeklyReset, true);
+        return GetCurrentApplicationWeek() + MasterManager.WeeklyReset;
     }
 
     public static DateTime GetCurrentApplicationWeekEnd()
