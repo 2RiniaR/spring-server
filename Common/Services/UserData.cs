@@ -114,7 +114,7 @@ public class UserData
 
         await using var context = new SpringDbContext();
         return await context.Set<DailyContribution>()
-            .Where(x => x.UserId == UserId && x.CreatedAt >= periodStart)
+            .Where(x => x.UserId == UserId && x.CreatedAt >= periodStart && x.Count > 0)
             .CountAsync();
     }
 }
